@@ -1,6 +1,7 @@
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -11,9 +12,10 @@ public class Test extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
+            System.out.println(update.getMessage());
             Chat chat = update.getMessage().getChat();
 
-            if (update.getMessage().hasText() || !update.getMessage().getCaption().isEmpty()) {
+            if (update.getMessage().hasText() || update.getMessage().getCaption() != null) {
                 SendMessage textResponse;
 
                 String text = update.getMessage().getText() == null
@@ -38,11 +40,26 @@ public class Test extends TelegramLongPollingBot {
                             .setText(response);
 
                     textResponse.setReplyToMessageId(update.getMessage().getMessageId());
-                } else {
+                } else if (text.toLowerCase().split(" ")[0].equals("photo_info")){
+                    SendPhoto sendPhoto = new SendPhoto()
+                            .setChatId(chat.getId())
+                            .setPhoto(text.split(" ")[1])
+                            .setCaption("Вот твоя фотка.")
+                            .setReplyToMessageId(update.getMessage().getMessageId());
+                    try {
+                        sendPhoto(sendPhoto);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+
+                    textResponse = new SendMessage()
+                            .setChatId(chat.getId())
+                            .setText("your photo info is: " + sendPhoto);
+                }                else {
                     textResponse = new SendMessage()
                             .setChatId(update.getMessage().getChatId())
                             .setText("caption is: " + update.getMessage().getCaption() +
-                                             "\ntext is: " + update.getMessage().getText() +
+                                             "\ntext is: "  + update.getMessage().getText() +
                                              "\n" + update.getMessage());
                 }
 
