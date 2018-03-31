@@ -12,7 +12,6 @@ public class Test extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
-            System.out.println(update.getMessage());
             Chat chat = update.getMessage().getChat();
 
             if (update.getMessage().hasText() || update.getMessage().getCaption() != null) {
